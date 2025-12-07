@@ -2,10 +2,17 @@
 import { useState } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
 
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 export default function SignIn() {
   const [captchaToken, setCaptchaToken] = useState(null);
-
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
+  const router = useRouter();
   function onCaptchaChange(token) {
     setCaptchaToken(token);
   }
@@ -14,21 +21,20 @@ export default function SignIn() {
     e.preventDefault();
 
     if (!captchaToken) {
-      alert("Please complete the reCAPTCHA");
+      setError("Please complete the reCAPTCHA");
       return;
     }
-    const response = await fetch("/api/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token: captchaToken }),
-    });
 
-    const data = await response.json();
+    setError("");
+    setLoading(true);
 
-    if (data.success) {
-      console.log("reCAPTCHA verified");
-    } else {
-      alert("reCAPTCHA verification failed");
+    try {
+      await login(email, password);
+      router.push("/home");
+    } catch (err) {
+      setError(err.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
   return (
@@ -56,12 +62,20 @@ export default function SignIn() {
           <div className="w-full max-w-[450px] bg-black/35 rounded px-8 md:px-16 py-12 md:py-16">
             <h1 className="text-white text-3xl font-bold mb-7">Sign In</h1>
 
-            <form className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded text-sm">
+                  {error}
+                </div>
+              )}
+
               <div className="relative h-14">
                 <input
-                  type="text"
+                  type="email"
                   id="email"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="peer w-full h-full bg-neutral-800/80 border border-neutral-500 rounded px-5 pt-4 text-white placeholder-transparent focus:bg-neutral-800/80 focus:border-white focus:outline-none transition"
                   placeholder="Email or phone number"
                 />
@@ -78,6 +92,8 @@ export default function SignIn() {
                   type="password"
                   id="password"
                   required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="peer w-full h-full bg-neutral-800/80 border border-neutral-500 rounded px-5 pt-4 text-white placeholder-transparent focus:bg-neutral-800/80 focus:border-white focus:outline-none transition"
                   placeholder="Password"
                 />
@@ -91,9 +107,10 @@ export default function SignIn() {
 
               <button
                 type="submit"
-                className="w-full h-12 bg-red-600 hover:bg-red-700 text-white font-medium rounded transition-colors"
+                disabled={loading}
+                className="w-full h-12 bg-red-600 hover:bg-red-700 disabled:bg-red-800 disabled:cursor-not-allowed text-white font-medium rounded transition-colors"
               >
-                Sign In
+                {loading ? "Signing in..." : "Sign In"}
               </button>
 
               <div className="text-center text-neutral-400 text-sm my-4">
@@ -137,15 +154,18 @@ export default function SignIn() {
             </div>
             <p className="text-neutral-400 text-base mt-16">
               New to Netflix?{" "}
-              <a href="#" className="text-white hover:underline font-medium">
+              <a
+                href="/signup"
+                className="text-white hover:underline font-medium"
+              >
                 Sign up now
               </a>
               .
             </p>
 
             <p className="text-neutral-500 text-xs mt-4 leading-relaxed">
-              This page is protected by Google reCAPTCHA to ensure you're not a
-              bot.
+              This page is protected by Google reCAPTCHA to ensure you&apos;re
+              not a bot.
               <a href="#" className="text-blue-600 hover:underline">
                 Learn more
               </a>

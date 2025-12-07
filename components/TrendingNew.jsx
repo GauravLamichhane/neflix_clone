@@ -45,7 +45,12 @@ export default function TrendingNew() {
                 .map((_, i) => <CardSkeleton key={i} />)
             : data.map((card) => (
                 <div key={card.title} className={cardClass}>
-                  <img src={card.src} alt={card.title} className={imgClass} />
+                  <img
+                    src={card.src}
+                    alt={card.title}
+                    className={imgClass}
+                    loading="lazy"
+                  />
                 </div>
               ))}
         </div>

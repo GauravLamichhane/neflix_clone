@@ -27,8 +27,10 @@ export default function Hero() {
         src="/hero.webp"
         alt="Netflix Background"
         className="absolute inset-0 w-full h-full object-cover"
+        loading="eager"
+        priority="true"
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/60 to-black"></div>
+      <div className="absolute inset-0 bg-linear-to-b from-black/30 via-black/60 to-black"></div>
       <div className="absolute flex flex-col justify-center items-center inset-0 px-4 text-center">
         <h1
           className="text-white font-extrabold text-[32px] md:text-5xl lg:text-6xl leading-tight m-0 mb-2 p-0 max-w-4xl"
